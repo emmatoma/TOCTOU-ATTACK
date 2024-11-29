@@ -10,25 +10,21 @@ project(
   VERSION 1.0
   LANGUAGES C)
 
-# The following functions define the executable and its dependencies
+# Define the executable and its dependencies
 add_executable(${CMAKE_PROJECT_NAME} sources/main.c)
-target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -Wall -Wextra -Werror)
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall -Wextra -Werror)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE sources/functions)
 target_sources(
   ${CMAKE_PROJECT_NAME}
   PRIVATE sources/functions/functions.c
           sources/functions/hidden_functions/hidden_functions.c)
 
-# The following function set root as owner and set the SUID but
-add_custom_command(
-  TARGET ${CMAKE_PROJECT_NAME}
-  COMMAND sudo chown root:root ${CMAKE_PROJECT_NAME} # man chown!
-  COMMAND sudo chmod u+s ${CMAKE_PROJECT_NAME}       # man chmod!
-  COMMENT "-- Adding the required privileges..."
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
+# Install command for safe privilege management
+install(TARGETS ${CMAKE_PROJECT_NAME}
+        RUNTIME DESTINATION bin
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE WORLD_EXECUTE)
 
-# The following functions define a database target which helps in usinh VSCode with clangd
+# For using clangd with VSCode
 add_custom_command(
   OUTPUT ${CMAKE_SOURCE_DIR}/compile_commands.json
   DEPENDS ${CMAKE_BINARY_DIR}/compile_commands.json
